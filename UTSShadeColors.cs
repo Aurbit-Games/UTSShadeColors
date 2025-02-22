@@ -115,8 +115,9 @@ namespace UTS
         public override void OnInspectorGUI()
         {
             UTSShadeColors uts = (UTSShadeColors)target;
-            
-            uts.Preview = GUILayout.Toggle(uts.Preview, "Show Preview");
+
+            GUIContent showPreview = new GUIContent("Show Preview", "Enable to show a live preview of the color changes in the scene view.");
+            uts.Preview = GUILayout.Toggle(uts.Preview, showPreview);
 
             DrawDefaultInspector();
 
