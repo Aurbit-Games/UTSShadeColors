@@ -12,10 +12,21 @@ namespace UTS
     {
         public bool Preview { get; set; }
 
-        [SerializeField] Color _baseColor;
-        [SerializeField, Range(0, 360)] int _hueShift = 5; 
-        [SerializeField, Range(0, 100)] int _saturationDiff = 20; 
-        [SerializeField, Range(0, 100)] int _valueDiff = 20;
+        [SerializeField,
+            Tooltip("The primary color that the toon shading will be based on.")]
+        Color _baseColor;
+
+        [SerializeField, Range(0, 360),
+            Tooltip("The amount to shift the hue of the base color, in degrees (0 to 360). This controls the color variation for the shades.")]
+        int _hueShift = 5;
+
+        [SerializeField, Range(0, 100),
+            Tooltip("The difference in saturation for the first and second shaded colors, where 0 is no change and 100 is the maximum decrease in saturation.")]
+        int _saturationDiff = 20;
+
+        [SerializeField, Range(0, 100),
+            Tooltip("The difference in brightness (value) for the first and second shaded colors, where 0 is no change and 100 is the maximum decrease in brightness.")]
+        int _valueDiff = 20;
 
         public static readonly float BlueHue = 240f;
         public static readonly float YellowHue = 60f;
