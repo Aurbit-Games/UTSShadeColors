@@ -16,8 +16,11 @@ namespace UTS
         [SerializeField, Range(0, 100)] int _saturationDiff = 20; 
         [SerializeField, Range(0, 100)] int _valueDiff = 20;
 
+        public static readonly float BlueHue = 240f;
+        public static readonly float YellowHue = 60f;
         public static readonly float NormalizedBlueHue = 240f / 360f;
-        public static readonly float NormalizedYellowHue = 120f / 360f;
+        public static readonly float NormalizedYellowHue = 60f / 360f;
+
         public static readonly string BaseColor = "_BaseColor";
         public static readonly string FirstShadeColor = "_1st_ShadeColor";
         public static readonly string SecondShadeColor = "_2nd_ShadeColor";
@@ -48,7 +51,7 @@ namespace UTS
 
             Color.RGBToHSV(_baseColor, out hue, out saturation, out value);
 
-            float firstHue = hue >= NormalizedBlueHue ? hue - normalizedHueShift : hue + normalizedHueShift;
+            float firstHue = ShadowHueShift(hue);
             float firstSaturation = saturation - normalizedSaturationDiff;
             float firstValue = value - normalizedValueDiff;
             firstHue = Mathf.Clamp01(firstHue);
@@ -57,7 +60,7 @@ namespace UTS
 
             Color firstColor = Color.HSVToRGB(firstHue, firstSaturation, firstValue);
 
-            float secondHue = firstHue >= NormalizedBlueHue ? firstHue - normalizedHueShift : firstHue + normalizedHueShift;
+            float secondHue = ShadowHueShift(firstHue);
             float secondSaturation = firstSaturation - normalizedSaturationDiff;
             float secondValue = firstValue - normalizedValueDiff;
             secondHue = Mathf.Clamp01(secondHue);
@@ -79,6 +82,28 @@ namespace UTS
             }
         }
 #endif
+        private float ShadowHueShift(float hue)
+        {
+            float hue360 = hue * 360;
+            float result = 0;
+
+            if (hue360 >= YellowHue && hue360 <= BlueHue)
+            {
+                result = hue360 += _hueShift;
+            }
+            else if (hue360 >= BlueHue)
+            {
+                result = hue360 - _hueShift;
+            }
+            else if (hue360 < YellowHue)
+            {
+                if (hue360 - _hueShift < 0)
+                {
+                    result = 360 - _hueShift - hue360;
+                }
+            }
+            return result / 360f;
+        }
     }
 
 #if UNITY_EDITOR
