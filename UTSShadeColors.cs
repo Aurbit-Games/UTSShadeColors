@@ -59,27 +59,9 @@ namespace UTS
                 Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
                 return;
             }
-            float hue, saturation, value;
 
-            Color.RGBToHSV(_baseColor, out hue, out saturation, out value);
-
-            float firstHue = ShadowHueShift(hue);
-            float firstSaturation = saturation - normalizedSaturationDiff;
-            float firstValue = value - normalizedValueDiff;
-            firstHue = Mathf.Clamp01(firstHue);
-            firstSaturation = Mathf.Clamp01(firstSaturation);
-            firstValue = Mathf.Clamp01(firstValue);
-
-            Color firstColor = Color.HSVToRGB(firstHue, firstSaturation, firstValue);
-
-            float secondHue = ShadowHueShift(firstHue);
-            float secondSaturation = firstSaturation - normalizedSaturationDiff;
-            float secondValue = firstValue - normalizedValueDiff;
-            secondHue = Mathf.Clamp01(secondHue);
-            secondSaturation = Mathf.Clamp01(secondSaturation);
-            secondValue = Mathf.Clamp01(secondValue);
-
-            Color secondColor = Color.HSVToRGB(secondHue, secondSaturation, secondValue);
+            Color firstColor = GetNextShadeColor(_baseColor);
+            Color secondColor = GetNextShadeColor(firstColor);
 
             _toonMat.SetColor(BaseColor, _baseColor);
             _toonMat.SetColor(FirstShadeColor, firstColor);
@@ -116,6 +98,21 @@ namespace UTS
                 }
             }
             return result / 360f;
+        }
+        private Color GetNextShadeColor(Color color)
+        {
+            float hue, saturation, value;
+
+            Color.RGBToHSV(color, out hue, out saturation, out value);
+
+            float newHue = ShadowHueShift(hue);
+            float newSaturation = value - normalizedSaturationDiff;
+            float newValue = value - normalizedValueDiff;
+            newHue = Mathf.Clamp01(newHue);
+            newSaturation = Mathf.Clamp01(newSaturation);
+            newValue = Mathf.Clamp01(newValue);
+
+            return Color.HSVToRGB(newHue, newSaturation, newValue);
         }
     }
 
