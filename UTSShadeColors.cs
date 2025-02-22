@@ -10,8 +10,9 @@ namespace UTS
     [ExecuteInEditMode]
     public class UTSShadeColors : MonoBehaviour
     {
+        public bool Preview { get; set; }
+
         [SerializeField] Color _baseColor;
-        [SerializeField] bool _preview = false; 
         [SerializeField, Range(0, 360)] int _hueShift = 5; 
         [SerializeField, Range(0, 100)] int _saturationDiff = 20; 
         [SerializeField, Range(0, 100)] int _valueDiff = 20;
@@ -76,15 +77,16 @@ namespace UTS
 #if UNITY_EDITOR
         private void Update()
         {
-            if (_preview)
+            if (Preview)
             {
                 SetColors();
+                Preview = Selection.activeObject == gameObject;
             }
         }
 #endif
         private float ShadowHueShift(float hue)
         {
-            float hue360 = hue * 360;
+            float hue360 = Mathf.Round(hue * 360);
             float result = 0;
 
             if (hue360 >= YellowHue && hue360 <= BlueHue)
@@ -99,7 +101,7 @@ namespace UTS
             {
                 if (hue360 - _hueShift < 0)
                 {
-                    result = 360 - _hueShift - hue360;
+                    result = 360 - (_hueShift - hue360);
                 }
             }
             return result / 360f;
@@ -112,9 +114,11 @@ namespace UTS
     {
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
-
             UTSShadeColors uts = (UTSShadeColors)target;
+            
+            uts.Preview = GUILayout.Toggle(uts.Preview, "Show Preview");
+
+            DrawDefaultInspector();
 
             if (GUILayout.Button("Set Colors"))
             {
