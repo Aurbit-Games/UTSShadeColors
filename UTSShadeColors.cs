@@ -45,25 +45,12 @@ namespace UTS
         public float normalizedValueDiff => _valueDiff / 100f;
         private void Start()
         {
+            Init();
             SetColors();
         }
 
         public void SetColors()
         {
-            if (!TryGetComponent(out _renderer))
-            {
-                Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
-            }
-            else
-            {
-                _toonMat = Application.isEditor ? _renderer.sharedMaterial : _renderer.material;
-            }
-            if (_toonMat == null || _renderer == null)
-            {
-                Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
-                return;
-            }
-
             Color firstColor = GetNextShadeColor(_baseColor);
             Color secondColor = GetNextShadeColor(firstColor);
 
@@ -81,6 +68,31 @@ namespace UTS
             }
         }
 #endif
+        public void Init()
+        {
+            if (!TryGetComponent(out _renderer))
+            {
+                Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
+            }
+            else
+            {
+                if (Application.isEditor)
+                {
+                    _toonMat = new Material(_renderer.sharedMaterial);
+                    _renderer.material = _toonMat;
+                }
+                else
+                {
+                    _toonMat = _renderer.material;
+                }
+
+            }
+            if (_toonMat == null || _renderer == null)
+            {
+                Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
+                return;
+            }
+        }
         private float ShadowHueShift(float hue)
         {
             float hue360 = Mathf.Round(hue * 360);
@@ -128,8 +140,25 @@ namespace UTS
         {
             UTSShadeColors uts = (UTSShadeColors)target;
 
-            GUIContent showPreview = new GUIContent("Show Preview", "Enable to show a live preview of the color changes in the scene view.");
-            uts.Preview = GUILayout.Toggle(uts.Preview, showPreview);
+            GUIStyle style = GUI.skin.button;
+            string previewLabel = string.Empty;
+            if (uts.Preview)
+            {
+                GUI.backgroundColor = Color.red;
+                previewLabel = "Disable preview";
+            }
+            else
+            {
+                GUI.backgroundColor = GUI.color;
+                previewLabel = "Enable preview";
+            }
+            GUI.backgroundColor = uts.Preview ? Color.red : GUI.color;
+            if (GUILayout.Button(previewLabel, style))
+            {
+                uts.Preview = !uts.Preview;
+                if (uts.Preview) uts.Init();
+            }
+            GUI.backgroundColor = GUI.color;
 
             DrawDefaultInspector();
 
