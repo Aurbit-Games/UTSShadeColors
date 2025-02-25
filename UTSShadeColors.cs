@@ -43,6 +43,10 @@ namespace UTS
         public float normalizedHueShift => _hueShift / 360f;
         public float normalizedSaturationDiff => _saturationDiff / 100f;
         public float normalizedValueDiff => _valueDiff / 100f;
+        private void Start()
+        {
+            SetColors();
+        }
 
         public void SetColors()
         {
