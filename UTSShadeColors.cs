@@ -118,6 +118,10 @@ namespace UTS
                 {
                     result = 360 - (_hueShift - hue360);
                 }
+                else
+                {
+                    result = hue360 - _hueShift;
+                }
             }
             return result / 360f;
         }
