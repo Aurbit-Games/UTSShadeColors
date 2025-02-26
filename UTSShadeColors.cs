@@ -38,7 +38,8 @@ namespace UTS
         public static readonly string SecondShadeColor = "_2nd_ShadeColor";
 
         private MeshRenderer _renderer;
-        private Material _toonMat;
+        public Material[] materials { get; private set; }
+        public int PreviewMaterialIndex { get; set; } = 0;
 
         public float normalizedHueShift => _hueShift / 360f;
         public float normalizedSaturationDiff => _saturationDiff / 100f;
@@ -46,24 +47,23 @@ namespace UTS
         private void Start()
         {
             Init();
-            SetColors();
         }
 
-        public void SetColors()
+        public void SetColors(Material material)
         {
             Color firstColor = GetNextShadeColor(_baseColor);
             Color secondColor = GetNextShadeColor(firstColor);
 
-            _toonMat.SetColor(BaseColor, _baseColor);
-            _toonMat.SetColor(FirstShadeColor, firstColor);
-            _toonMat.SetColor(SecondShadeColor, secondColor);
+            material.SetColor(BaseColor, _baseColor);
+            material.SetColor(FirstShadeColor, firstColor);
+            material.SetColor(SecondShadeColor, secondColor);
         }
 #if UNITY_EDITOR
         private void Update()
         {
             if (Preview)
             {
-                SetColors();
+                SetColors(materials[PreviewMaterialIndex]);
                 Preview = Selection.activeObject == gameObject;
             }
         }
@@ -76,18 +76,24 @@ namespace UTS
             }
             else
             {
+                _renderer.materials.CopyTo(materials, 0);
                 if (Application.isEditor)
                 {
-                    _toonMat = new Material(_renderer.sharedMaterial);
-                    _renderer.material = _toonMat;
+                    //foreach (var material in materials)
+                    //{
+                    //    materials = new Material(_renderer.sharedMaterial);
+                    //    _renderer.material = materials;
+                    //}
+                    _renderer.sharedMaterials.CopyTo(materials, 0);
                 }
                 else
                 {
-                    _toonMat = _renderer.material;
+                    //materials = _renderer.material;
+                    _renderer.materials.CopyTo(materials, 0);
                 }
 
             }
-            if (_toonMat == null || _renderer == null)
+            if (materials == null || _renderer == null)
             {
                 Debug.LogError($"There is no MeshRenderer component attached to {gameObject}", gameObject);
                 return;
@@ -140,6 +146,19 @@ namespace UTS
         {
             UTSShadeColors uts = (UTSShadeColors)target;
 
+            DrawMateialIndexButtons(uts);
+
+            DrawDefaultInspector();
+
+            DrawPreviewButton(uts);
+            if (GUILayout.Button("Set Colors"))
+            {
+                uts.SetColors(uts.materials[uts.PreviewMaterialIndex]);
+            }
+        }
+
+        private void DrawPreviewButton(UTSShadeColors uts)
+        {
             GUIStyle style = GUI.skin.button;
             string previewLabel = string.Empty;
             if (uts.Preview)
@@ -159,12 +178,31 @@ namespace UTS
                 if (uts.Preview) uts.Init();
             }
             GUI.backgroundColor = GUI.color;
-
-            DrawDefaultInspector();
-
-            if (GUILayout.Button("Set Colors"))
+        }
+        private void DrawMateialIndexButtons(UTSShadeColors uts)
+        {
+            for (int i = 0; i < uts.materials.Length; i++)
             {
-                uts.SetColors();
+                Material mat = uts.materials[i];
+
+                GUIStyle style = GUI.skin.button;
+                string label = string.Empty;
+                if (uts.Preview)
+                {
+                    GUI.backgroundColor = Color.red;
+                    label = $"> {mat.name}";
+                }
+                else
+                {
+                    GUI.backgroundColor = GUI.color;
+                    label = mat.name;
+                }
+                GUI.backgroundColor = uts.PreviewMaterialIndex == i ? Color.red : GUI.color;
+                if (GUILayout.Button(mat.name))
+                {
+                    uts.PreviewMaterialIndex = i;
+                }
+                GUI.backgroundColor = GUI.color;
             }
         }
     }
