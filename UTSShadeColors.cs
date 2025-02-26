@@ -76,7 +76,7 @@ namespace UTS
             }
             else
             {
-                _renderer.materials.CopyTo(materials, 0);
+                materials = new Material[_renderer.sharedMaterials.Length];
                 if (Application.isEditor)
                 {
                     //foreach (var material in materials)
@@ -142,12 +142,17 @@ namespace UTS
     [CustomEditor(typeof(UTSShadeColors))]
     public class CustomUTSShadeColorsInspector : Editor
     {
+        private bool _initilized;
         public override void OnInspectorGUI()
         {
             UTSShadeColors uts = (UTSShadeColors)target;
+            if (!_initilized)
+            {
+                uts.Init();
+                _initilized = true;
+            }
 
-            DrawMateialIndexButtons(uts);
-
+            DrawMateialIndexButtons(uts); 
             DrawDefaultInspector();
 
             DrawPreviewButton(uts);
@@ -155,6 +160,11 @@ namespace UTS
             {
                 uts.SetColors(uts.materials[uts.PreviewMaterialIndex]);
             }
+            if (GUILayout.Button("Refresh"))
+            {
+                uts.Init();
+            }
+
         }
 
         private void DrawPreviewButton(UTSShadeColors uts)
@@ -185,20 +195,19 @@ namespace UTS
             {
                 Material mat = uts.materials[i];
 
-                GUIStyle style = GUI.skin.button;
                 string label = string.Empty;
-                if (uts.Preview)
+                if (uts.PreviewMaterialIndex == i && uts.Preview)
                 {
                     GUI.backgroundColor = Color.red;
-                    label = $"> {mat.name}";
+                    label = $"> {mat.name.Replace("(Instance)", string.Empty)}";
                 }
                 else
                 {
                     GUI.backgroundColor = GUI.color;
-                    label = mat.name;
+                    label = mat.name.Replace("(Instance)", string.Empty);
                 }
                 GUI.backgroundColor = uts.PreviewMaterialIndex == i ? Color.red : GUI.color;
-                if (GUILayout.Button(mat.name))
+                if (GUILayout.Button(label))
                 {
                     uts.PreviewMaterialIndex = i;
                 }
