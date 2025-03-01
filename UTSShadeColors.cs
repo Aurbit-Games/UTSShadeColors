@@ -85,11 +85,17 @@ namespace UTS
                     //    _renderer.material = materials;
                     //}
                     _renderer.sharedMaterials.CopyTo(materials, 0);
+                    for (int i = 0; i < _renderer.sharedMaterials.Length; i++)
+                    {
+                        Material matInstance = new Material(_renderer.sharedMaterials[i]);
+                        materials[i] = matInstance;
+                        _renderer.materials = materials;
+                    }
                 }
                 else
                 {
                     //materials = _renderer.material;
-                    _renderer.materials.CopyTo(materials, 0);
+                    _renderer.sharedMaterials.CopyTo(materials, 0);
                 }
 
             }
